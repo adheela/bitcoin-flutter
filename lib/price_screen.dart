@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
 import 'coin_data.dart';
-import 'dart:io' show Platform;
+import 'coin_data.dart' as coins;
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _PriceScreenState extends State<PriceScreen> {
 
   DropdownButton<String> androidDropdown() {
     List<DropdownMenuItem<String>> dropdownItems = [];
-    for (String currency in currenciesList) {
+    for (String currency in currencies) {
       var newItem = DropdownMenuItem(
         child: Text(currency),
         value: currency,
@@ -35,16 +36,15 @@ class _PriceScreenState extends State<PriceScreen> {
 
   CupertinoPicker iOSPicker() {
     List<Text> pickerItems = [];
-    for (String currency in currenciesList) {
+    for (String currency in currencies) {
       pickerItems.add(Text(currency));
     }
-
     return CupertinoPicker(
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
       onSelectedItemChanged: (selectedIndex) {
         setState(() {
-          selectedCurrency = currenciesList[selectedIndex];
+          selectedCurrency = currencies[selectedIndex];
           getData();
         });
       },
@@ -58,7 +58,8 @@ class _PriceScreenState extends State<PriceScreen> {
   void getData() async {
     isWaiting = true;
     try {
-      var data = await CoinData().getCoinData(selectedCurrency);
+      var data = await coins.getCoinData(selectedCurrency);
+      if (!mounted) return;
       isWaiting = false;
       setState(() {
         coinValues = data;
@@ -74,22 +75,16 @@ class _PriceScreenState extends State<PriceScreen> {
     getData();
   }
 
-  Column makeCards() {
-    List<CryptoCard> cryptoCards = [];
-    for (String crypto in cryptoList) {
-      cryptoCards.add(
-        CryptoCard(
-          cryptoCurrency: crypto,
-          selectedCurrency: selectedCurrency,
-          value: isWaiting ? '?' : coinValues[crypto],
-        ),
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: cryptoCards,
-    );
-  }
+  Widget makeCards() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: cryptoList.map((crypto) =>
+      CryptoCard(
+        cryptoCurrency: crypto,
+        selectedCurrency: selectedCurrency,
+        value: isWaiting ? '?' : coinValues[crypto],
+      )
+    ).toList(growable: false),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +102,7 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: Platform.isIOS ? iOSPicker() : androidDropdown(),
+            child: Theme.of(context).platform == TargetPlatform.iOS ? iOSPicker() : androidDropdown(),
           ),
         ],
       ),
