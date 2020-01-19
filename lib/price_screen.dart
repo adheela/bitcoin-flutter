@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'coin_data.dart' as coins;
+import 'coins.dart' as coins;
 import 'widgets/crypto_card.dart';
 import 'widgets/currency_dropdown.dart';
 import 'widgets/currency_picker.dart';
@@ -17,7 +17,7 @@ class _PriceScreenState extends State<PriceScreen> {
   Map<String, String> coinValues = {};
   bool isWaiting = false;
 
-  final valueNotifier = ValueNotifier(null);
+  final valueNotifier = ValueNotifier<String>(null);
 
   void getData() async {
     isWaiting = true;
@@ -47,7 +47,7 @@ class _PriceScreenState extends State<PriceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('🤑 Coin Ticker'),
+        title: Text('Coin Ticker'),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

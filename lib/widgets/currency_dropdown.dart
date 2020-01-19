@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 // ignore: must_be_immutable
 class CurrencyDropdown extends StatelessWidget {
   final List<String> currencies;
-  final ValueNotifier notifier;
+  final ValueNotifier<String> notifier;
   String _selected;
   String get selected => _selected;
 
