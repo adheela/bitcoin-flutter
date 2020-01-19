@@ -7,14 +7,14 @@ const currencies = [
   'JPY', 'MXN', 'NOK', 'NZD', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'USD', 'ZAR'
 ];
 
-const List<String> cryptoList = ['BTC', 'ETH', 'LTC'];
+const List<String> cryptos = ['BTC', 'ETH', 'LTC'];
 
 const _bitcoinAverageURL =
     'https://apiv2.bitcoinaverage.com/indices/global/ticker';
 
 Future getCoinData(String currency) async {
   Map<String, String> cryptoPrices = {};
-  for (String crypto in cryptoList) {
+  for (String crypto in cryptos) {
     String requestURL = '$_bitcoinAverageURL/$crypto$currency';
     http.Response response = await http.get(requestURL);
     if (response.statusCode == 200) {

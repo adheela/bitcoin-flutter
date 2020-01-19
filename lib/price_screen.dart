@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'coin_data.dart';
 import 'coin_data.dart' as coins;
+import 'widgets/crypto_card.dart';
+import 'widgets/currency_dropdown.dart';
+import 'widgets/currency_picker.dart';
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -10,50 +12,12 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String selectedCurrency = 'AUD';
-
-  DropdownButton<String> androidDropdown() {
-    List<DropdownMenuItem<String>> dropdownItems = [];
-    for (String currency in currencies) {
-      var newItem = DropdownMenuItem(
-        child: Text(currency),
-        value: currency,
-      );
-      dropdownItems.add(newItem);
-    }
-
-    return DropdownButton<String>(
-      value: selectedCurrency,
-      items: dropdownItems,
-      onChanged: (value) {
-        setState(() {
-          selectedCurrency = value;
-          getData();
-        });
-      },
-    );
-  }
-
-  CupertinoPicker iOSPicker() {
-    List<Text> pickerItems = [];
-    for (String currency in currencies) {
-      pickerItems.add(Text(currency));
-    }
-    return CupertinoPicker(
-      backgroundColor: Colors.lightBlue,
-      itemExtent: 32.0,
-      onSelectedItemChanged: (selectedIndex) {
-        setState(() {
-          selectedCurrency = currencies[selectedIndex];
-          getData();
-        });
-      },
-      children: pickerItems,
-    );
-  }
+  String selectedCurrency = coins.currencies.first;
 
   Map<String, String> coinValues = {};
   bool isWaiting = false;
+
+  final valueNotifier = ValueNotifier(null);
 
   void getData() async {
     isWaiting = true;
@@ -72,19 +36,12 @@ class _PriceScreenState extends State<PriceScreen> {
   @override
   void initState() {
     super.initState();
+    valueNotifier.addListener(() {
+      selectedCurrency = valueNotifier.value;
+      setState(getData);
+    });
     getData();
   }
-
-  Widget makeCards() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: cryptoList.map((crypto) =>
-      CryptoCard(
-        cryptoCurrency: crypto,
-        selectedCurrency: selectedCurrency,
-        value: isWaiting ? '?' : coinValues[crypto],
-      )
-    ).toList(growable: false),
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -96,53 +53,33 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          makeCards(),
+          getCards(),
           Container(
             height: 150.0,
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: Theme.of(context).platform == TargetPlatform.iOS ? iOSPicker() : androidDropdown(),
+            child: getPicker(),
           ),
         ],
       ),
     );
   }
-}
 
-class CryptoCard extends StatelessWidget {
-  const CryptoCard({
-    this.value,
-    this.selectedCurrency,
-    this.cryptoCurrency,
-  });
+  Widget getCards() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: coins.cryptos.map((crypto) =>
+        CryptoCard(
+          cryptoCurrency: crypto,
+          selectedCurrency: selectedCurrency,
+          value: isWaiting ? '?' : coinValues[crypto],
+        )
+    ).toList(growable: false),
+  );
 
-  final String value;
-  final String selectedCurrency;
-  final String cryptoCurrency;
+  Widget getPicker() =>
+      Theme.of(context).platform == TargetPlatform.iOS
+      ? CurrencyPicker(coins.currencies, valueNotifier, selectedCurrency)
+      : CurrencyDropdown(coins.currencies, valueNotifier, selectedCurrency);
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-      child: Card(
-        color: Colors.lightBlueAccent,
-        elevation: 5.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-          child: Text(
-            '1 $cryptoCurrency = $value $selectedCurrency',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20.0,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
